@@ -51,6 +51,12 @@
 								</span>
 								<span v-else class="text-capitalize"> 0 </span>
 							</template>
+							<template v-slot:[`item.actions`]="{ item }">
+								<v-btn icon><v-icon>mdi-pencil</v-icon></v-btn>
+								<v-btn icon @click="deleteItem(item)">
+									<v-icon>mdi-close</v-icon>
+								</v-btn>
+							</template>
 						</v-data-table>
 					</v-col>
 				</v-row>
@@ -147,6 +153,7 @@ export default {
 			{ text: '%', value: 'porcentaje' },
 			{ text: 'Precio $', value: 'total_dolar' },
 			{ text: 'Precio Bs', value: 'total_bolivar' },
+			{ text: 'Acciones', value: 'actions' },
 		],
 		items: [],
 	}),
@@ -183,7 +190,7 @@ export default {
 		db.collection('products').onSnapshot(querySnapshot => {
 			this.items = [];
 			querySnapshot.forEach(doc => {
-				this.items.push(doc.data());
+				this.items.push({ ...doc.data(), id: doc.id });
 			});
 		});
 	},
@@ -195,13 +202,10 @@ export default {
 		setPrice(item, type) {
 			// valor dolar unidad
 			const value = item.price / item.cant;
-			console.log(value);
 			// valor unidad en bolivares
 			const valueBs = value * this.dolar;
-			console.log(valueBs);
 			// suma %
 			const sum = (50 / 100) * valueBs + valueBs;
-			console.log(sum);
 
 			if (type == 'bs') return sum;
 			else return 'nada';
@@ -210,6 +214,10 @@ export default {
 			await db.collection('products').add(this.form);
 			this.clearInputs();
 			this.dialog = false;
+		},
+		async deleteItem(item) {
+			confirm(`Eliminar ${item.name}`) &&
+				(await db.collection('products').doc(item.id).delete());
 		},
 		clearInputs() {
 			this.form = {
