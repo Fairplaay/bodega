@@ -35,44 +35,44 @@
 				<v-card-title class="headline primary white--text">Nuevo producto</v-card-title>
 				<v-card-text class="mt-4 pb-0">
 					<v-text-field
-						v-model="name"
+						v-model="form.name"
 						label="Nombre del producto"
 						dense
 						outlined
 						:error-messages="nameErrors"
-						@input="$v.name.$touch()"
-						@blur="$v.name.$touch()"
+						@input="$v.form.name.$touch()"
+						@blur="$v.form.name.$touch()"
 					></v-text-field>
 					<v-text-field
-						v-model="price"
+						v-model="form.price"
 						type="number"
 						dense
 						outlined
 						label="Precio"
 						placeholder="Al mayor en dolar"
 						:error-messages="priceErrors"
-						@input="$v.price.$touch()"
-						@blur="$v.price.$touch()"
+						@input="$v.form.price.$touch()"
+						@blur="$v.form.price.$touch()"
 					></v-text-field>
 					<v-text-field
-						v-model="cant"
+						v-model="form.cant"
 						type="number"
 						dense
 						outlined
 						label="Cantidad"
 						:error-messages="cantErrors"
-						@input="$v.cant.$touch()"
-						@blur="$v.cant.$touch()"
+						@input="$v.form.cant.$touch()"
+						@blur="$v.form.cant.$touch()"
 					></v-text-field>
 					<v-text-field
-						v-model="measure"
+						v-model="form.measure"
 						type="text"
 						dense
 						outlined
 						label="Medida ej: 50gr, 1kg, 1Lts"
 						:error-messages="measureErrors"
-						@input="$v.measure.$touch()"
-						@blur="$v.measure.$touch()"
+						@input="$v.form.measure.$touch()"
+						@blur="$v.form.measure.$touch()"
 					></v-text-field>
 				</v-card-text>
 
@@ -91,16 +91,28 @@
 <script>
 import { validationMixin } from 'vuelidate';
 const { required, minLength, maxLength } = require('vuelidate/lib/validators');
+import Firebase from 'firebase/app';
+import 'firebase/database'; // If using Firebase database
+import config from '@/config.js';
+
+let app = Firebase.initializeApp(config);
+let db = app.database();
+let productsRef = db.ref('products');
 
 export default {
 	name: 'App',
 	mixins: [validationMixin],
+	firebase: {
+		products: productsRef,
+	},
 	data: () => ({
 		dialog: false,
-		name: '',
-		price: null,
-		cant: null,
-		measure: null,
+		form: {
+			name: '',
+			price: null,
+			cant: null,
+			measure: null,
+		},
 		headers: [
 			{
 				text: 'Dessert (100g serving)',
@@ -119,28 +131,28 @@ export default {
 	computed: {
 		nameErrors() {
 			const errors = [];
-			if (!this.$v.name.$dirty) return errors;
-			!this.$v.name.required && errors.push('Campo requerido');
-			!this.$v.name.minLength && errors.push('Minimo 4 Caracteres');
-			!this.$v.name.maxLength && errors.push('Maximo 100 Caracteres');
+			if (!this.$v.form.name.$dirty) return errors;
+			!this.$v.form.name.required && errors.push('Campo requerido');
+			!this.$v.form.name.minLength && errors.push('Minimo 4 Caracteres');
+			!this.$v.form.name.maxLength && errors.push('Maximo 100 Caracteres');
 			return errors;
 		},
 		priceErrors() {
 			const errors = [];
-			if (!this.$v.price.$dirty) return errors;
-			!this.$v.price.required && errors.push('Campo requerido');
+			if (!this.$v.form.price.$dirty) return errors;
+			!this.$v.form.price.required && errors.push('Campo requerido');
 			return errors;
 		},
 		cantErrors() {
 			const errors = [];
-			if (!this.$v.cant.$dirty) return errors;
-			!this.$v.cant.required && errors.push('Campo requerido');
+			if (!this.$v.form.cant.$dirty) return errors;
+			!this.$v.form.cant.required && errors.push('Campo requerido');
 			return errors;
 		},
 		measureErrors() {
 			const errors = [];
-			if (!this.$v.measure.$dirty) return errors;
-			!this.$v.measure.required && errors.push('Campo requerido');
+			if (!this.$v.form.measure.$dirty) return errors;
+			!this.$v.form.measure.required && errors.push('Campo requerido');
 			return errors;
 		},
 	},
@@ -150,19 +162,21 @@ export default {
 		},
 	},
 	validations: {
-		name: {
-			required,
-			minLength: minLength(4),
-			maxLength: maxLength(100),
-		},
-		price: {
-			required,
-		},
-		cant: {
-			required,
-		},
-		measure: {
-			required,
+		form: {
+			name: {
+				required,
+				minLength: minLength(4),
+				maxLength: maxLength(100),
+			},
+			price: {
+				required,
+			},
+			cant: {
+				required,
+			},
+			measure: {
+				required,
+			},
 		},
 	},
 };
