@@ -91,12 +91,8 @@
 <script>
 import { validationMixin } from 'vuelidate';
 const { required, minLength, maxLength } = require('vuelidate/lib/validators');
-import Firebase from 'firebase/app';
-import 'firebase/database'; // If using Firebase database
-import config from '@/config.js';
+import { db } from '@/Firebase';
 
-let app = Firebase.initializeApp(config);
-let db = app.database();
 let productsRef = db.ref('products');
 
 export default {
@@ -156,9 +152,21 @@ export default {
 			return errors;
 		},
 	},
+	mounted() {},
 	methods: {
 		save() {
-			alert('guardando...');
+			console.log(this.products);
+			productsRef.push(this.products);
+			this.clearInputs();
+			this.dialog = false;
+		},
+		clearInputs() {
+			this.form = {
+				name: '',
+				price: null,
+				cant: null,
+				measure: null,
+			};
 		},
 	},
 	validations: {
