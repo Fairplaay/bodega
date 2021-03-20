@@ -6,6 +6,7 @@
 				<v-row justity="space-between" align="center">
 					<v-col>
 						<v-text-field
+							v-model="dolar"
 							dense
 							style="width: 300px"
 							outlined
@@ -25,6 +26,10 @@
 					<v-col cols="4" class="text-right">
 						<v-btn color="primary" @click="dialog = true"> Nuevo producto </v-btn>
 					</v-col>
+					<v-col cols="12" class="text--secondary title">
+						Se ha establecido el precio del dolar a
+						<span class="success--text title">{{ dolar }} BSF</span>
+					</v-col>
 				</v-row>
 				<v-row>
 					<v-col cols="12">
@@ -34,10 +39,19 @@
 							:items-per-page="5"
 							class="elevation-1"
 						>
+							<template v-slot:[`item.porcentaje`]>
+								<span class="text-capitalize"> 50% </span>
+							</template>
 							<template v-slot:[`item.total_dolar`]="{ item }">
-								<span class="text-capitalize"> {{ item.cant / dolar }} </span>
-							</template></v-data-table
-						>
+								<span class="text-capitalize"> {{ item.price / item.cant }} </span>
+							</template>
+							<template v-slot:[`item.total_bolivar`]="{ item }">
+								<span v-if="dolar" class="text-capitalize">
+									{{ setPrice(item, 'bs') }}
+								</span>
+								<span v-else class="text-capitalize"> 0 </span>
+							</template>
+						</v-data-table>
 					</v-col>
 				</v-row>
 			</v-container>
@@ -130,8 +144,9 @@ export default {
 			{ text: 'Precio', value: 'price' },
 			{ text: 'Cantidad', value: 'cant' },
 			{ text: 'Unidad de medida', value: 'measure' },
+			{ text: '%', value: 'porcentaje' },
 			{ text: 'Precio $', value: 'total_dolar' },
-			{ text: 'Precio Bs', value: 'totral_bolivar' },
+			{ text: 'Precio Bs', value: 'total_bolivar' },
 		],
 		items: [],
 	}),
@@ -164,6 +179,7 @@ export default {
 		},
 	},
 	mounted() {
+		this.dolar = localStorage.getItem('DOLAR');
 		db.collection('products').onSnapshot(querySnapshot => {
 			this.items = [];
 			querySnapshot.forEach(doc => {
@@ -173,7 +189,22 @@ export default {
 	},
 	methods: {
 		setDolar(price) {
+			localStorage.setItem('DOLAR', price);
 			this.dolar = price;
+		},
+		setPrice(item, type) {
+			// valor dolar unidad
+			const value = item.price / item.cant;
+			console.log(value);
+			// valor unidad en bolivares
+			const valueBs = value * this.dolar;
+			console.log(valueBs);
+			// suma %
+			const sum = (50 / 100) * valueBs + valueBs;
+			console.log(sum);
+
+			if (type == 'bs') return sum;
+			else return 'nada';
 		},
 		async save() {
 			await db.collection('products').add(this.form);
@@ -187,6 +218,9 @@ export default {
 				cant: null,
 				measure: null,
 			};
+		},
+		calculatePercent(percent, num) {
+			return num * (percent / 100);
 		},
 	},
 	validations: {
