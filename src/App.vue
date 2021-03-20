@@ -34,13 +34,16 @@
 				<v-row>
 					<v-col cols="12">
 						<v-data-table
+							:loading="loading"
 							:headers="headers"
 							:items="items"
 							:items-per-page="5"
 							class="elevation-1"
+							loading-text="Cargando..."
+							no-data-text="No hay productos"
 						>
-							<template v-slot:[`item.porcentaje`]>
-								<span class="text-capitalize"> 50% </span>
+							<template v-slot:[`item.percent`]="{ item }">
+								<span class="text-capitalize"> {{ item.percent }} </span>
 							</template>
 							<template v-slot:[`item.total_dolar`]="{ item }">
 								<span class="text-capitalize"> {{ item.price / item.cant }} </span>
@@ -106,6 +109,16 @@
 						@input="$v.form.measure.$touch()"
 						@blur="$v.form.measure.$touch()"
 					></v-text-field>
+					<v-text-field
+						v-model="form.percent"
+						type="text"
+						dense
+						outlined
+						label="Porcentaje de ganancia"
+						:error-messages="percentErrors"
+						@input="$v.form.percent.$touch()"
+						@blur="$v.form.percent.$touch()"
+					></v-text-field>
 				</v-card-text>
 
 				<v-divider></v-divider>
@@ -134,11 +147,13 @@ export default {
 	data: () => ({
 		dolar: 0,
 		dialog: false,
+		loading: false,
 		form: {
 			name: '',
 			price: null,
 			cant: null,
 			measure: null,
+			percent: 50,
 		},
 		headers: [
 			{
@@ -150,7 +165,7 @@ export default {
 			{ text: 'Precio', value: 'price' },
 			{ text: 'Cantidad', value: 'cant' },
 			{ text: 'Unidad de medida', value: 'measure' },
-			{ text: '%', value: 'porcentaje' },
+			{ text: '%', value: 'percent' },
 			{ text: 'Precio $', value: 'total_dolar' },
 			{ text: 'Precio Bs', value: 'total_bolivar' },
 			{ text: 'Acciones', value: 'actions' },
@@ -184,7 +199,14 @@ export default {
 			!this.$v.form.measure.required && errors.push('Campo requerido');
 			return errors;
 		},
+		percentErrors() {
+			const errors = [];
+			if (!this.$v.form.percent.$dirty) return errors;
+			!this.$v.form.percent.required && errors.push('Campo requerido');
+			return errors;
+		},
 	},
+
 	mounted() {
 		this.dolar = localStorage.getItem('DOLAR');
 		db.collection('products').onSnapshot(querySnapshot => {
@@ -199,25 +221,31 @@ export default {
 			localStorage.setItem('DOLAR', price);
 			this.dolar = price;
 		},
-		setPrice(item, type) {
+		setPrice(item) {
 			// valor dolar unidad
 			const value = item.price / item.cant;
 			// valor unidad en bolivares
 			const valueBs = value * this.dolar;
 			// suma %
-			const sum = (50 / 100) * valueBs + valueBs;
+			const sum = (item.percent / 100) * valueBs + valueBs;
 
-			if (type == 'bs') return sum;
-			else return 'nada';
+			return sum;
 		},
 		async save() {
-			await db.collection('products').add(this.form);
-			this.clearInputs();
-			this.dialog = false;
+			if (!this.$v.$invalid) {
+				this.loading = true;
+				await db.collection('products').add(this.form);
+				this.clearInputs();
+				this.dialog = false;
+				this.loading = false;
+			}
 		},
 		async deleteItem(item) {
-			confirm(`Eliminar ${item.name}`) &&
-				(await db.collection('products').doc(item.id).delete());
+			if (confirm(`Eliminar ${item.name}`)) {
+				this.loading = true;
+				await db.collection('products').doc(item.id).delete();
+				this.loading = false;
+			}
 		},
 		clearInputs() {
 			this.form = {
@@ -226,9 +254,6 @@ export default {
 				cant: null,
 				measure: null,
 			};
-		},
-		calculatePercent(percent, num) {
-			return num * (percent / 100);
 		},
 	},
 	validations: {
@@ -245,6 +270,9 @@ export default {
 				required,
 			},
 			measure: {
+				required,
+			},
+			percent: {
 				required,
 			},
 		},
