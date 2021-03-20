@@ -12,7 +12,15 @@
 							label="Precio del dolar hoy"
 							placeholder="Escriba el precio del dolar hoy"
 							hide-details
-						></v-text-field>
+							type="number"
+							@change="setDolar"
+						>
+							<template v-slot:append-outer>
+								<v-btn text small>
+									<span>Establecer</span>
+								</v-btn>
+							</template>
+						</v-text-field>
 					</v-col>
 					<v-col cols="4" class="text-right">
 						<v-btn color="primary" @click="dialog = true"> Nuevo producto </v-btn>
@@ -25,7 +33,11 @@
 							:items="items"
 							:items-per-page="5"
 							class="elevation-1"
-						></v-data-table>
+						>
+							<template v-slot:[`item.total_dolar`]="{ item }">
+								<span class="text-capitalize"> {{ item.cant / dolar }} </span>
+							</template></v-data-table
+						>
 					</v-col>
 				</v-row>
 			</v-container>
@@ -93,15 +105,14 @@ import { validationMixin } from 'vuelidate';
 const { required, minLength, maxLength } = require('vuelidate/lib/validators');
 import { db } from '@/Firebase';
 
-let productsRef = db.ref('products');
-
 export default {
 	name: 'App',
 	mixins: [validationMixin],
 	firebase: {
-		products: productsRef,
+		products: db.collection('products'),
 	},
 	data: () => ({
+		dolar: 0,
 		dialog: false,
 		form: {
 			name: '',
@@ -111,16 +122,16 @@ export default {
 		},
 		headers: [
 			{
-				text: 'Dessert (100g serving)',
+				text: 'Nombre del product',
 				align: 'start',
 				sortable: false,
 				value: 'name',
 			},
-			{ text: 'Calories', value: 'calories' },
-			{ text: 'Fat (g)', value: 'fat' },
-			{ text: 'Carbs (g)', value: 'carbs' },
-			{ text: 'Protein (g)', value: 'protein' },
-			{ text: 'Iron (%)', value: 'iron' },
+			{ text: 'Precio', value: 'price' },
+			{ text: 'Cantidad', value: 'cant' },
+			{ text: 'Unidad de medida', value: 'measure' },
+			{ text: 'Precio $', value: 'total_dolar' },
+			{ text: 'Precio Bs', value: 'totral_bolivar' },
 		],
 		items: [],
 	}),
@@ -152,11 +163,20 @@ export default {
 			return errors;
 		},
 	},
-	mounted() {},
+	mounted() {
+		db.collection('products').onSnapshot(querySnapshot => {
+			this.items = [];
+			querySnapshot.forEach(doc => {
+				this.items.push(doc.data());
+			});
+		});
+	},
 	methods: {
-		save() {
-			console.log(this.products);
-			productsRef.push(this.products);
+		setDolar(price) {
+			this.dolar = price;
+		},
+		async save() {
+			await db.collection('products').add(this.form);
 			this.clearInputs();
 			this.dialog = false;
 		},
