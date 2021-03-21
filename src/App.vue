@@ -2,12 +2,33 @@
 	<v-app>
 		<v-app-bar v-if="$route.meta.layout" app color="primary" dark>
 			{{ $route.meta.title }}
+			<v-spacer></v-spacer>
+			<v-btn text @click="logout">Salir</v-btn>
 		</v-app-bar>
 		<v-main>
 			<router-view />
 		</v-main>
 	</v-app>
 </template>
+
+<script>
+import { auth } from '@/Firebase';
+
+export default {
+	mounted() {
+		auth.onAuthStateChanged(user => {
+			if (user) console.log('ya ha ingresado');
+			else console.log('ya ha salio');
+		});
+	},
+	methods: {
+		async logout() {
+			await auth.signOut();
+			this.$router.push({ name: 'auth' });
+		},
+	},
+};
+</script>
 
 <style>
 .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)
