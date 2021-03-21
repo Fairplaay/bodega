@@ -59,16 +59,20 @@ export default {
 	methods: {
 		async onSubmit() {
 			try {
-				const userCredentials = await auth.createUserWithEmailAndPassword(
+				const { user } = await auth.createUserWithEmailAndPassword(
 					this.form.email,
 					this.form.password
 				);
-				console.log(userCredentials, 'SignUp');
-				this.snackbar = {
-					text: `Registro exitoso`,
-					color: 'success',
-					show: true,
-				};
+				localStorage.setItem(
+					'user',
+					JSON.stringify({
+						name: user.displayName,
+						email: user.email,
+						photoUrl: user.photoURL,
+						emailVerified: user.emailVerified,
+						uid: user.uid,
+					})
+				);
 			} catch (error) {
 				this.snackbar = { text: error.message, color: 'error', show: true };
 			}

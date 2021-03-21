@@ -57,11 +57,20 @@ export default {
 	methods: {
 		async onSubmit() {
 			try {
-				const userCredentials = await auth.signInWithEmailAndPassword(
+				const { user } = await auth.signInWithEmailAndPassword(
 					this.form.email,
 					this.form.password
 				);
-				console.log(userCredentials, 'Signin');
+				localStorage.setItem(
+					'user',
+					JSON.stringify({
+						name: user.displayName,
+						email: user.email,
+						photoUrl: user.photoURL,
+						emailVerified: user.emailVerified,
+						uid: user.uid,
+					})
+				);
 				this.$router.push({ name: 'Products' });
 			} catch (error) {
 				this.snackbar = { text: error.message, color: 'error', show: true };

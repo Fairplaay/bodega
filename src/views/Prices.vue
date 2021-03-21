@@ -284,7 +284,7 @@ export default {
 					this.loading = true;
 					await db.collection('products').doc(item.id).delete();
 					this.snackbar = {
-						text: `Eliminado ${item.name}`,
+						text: `Se borró ${item.name}`,
 						color: 'success',
 						show: true,
 					};

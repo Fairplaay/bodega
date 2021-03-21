@@ -3,6 +3,8 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
+const user = JSON.parse(localStorage.getItem('user'));
+
 const routes = [
 	{
 		path: '/auth',
@@ -12,7 +14,7 @@ const routes = [
 	},
 	{
 		path: '/',
-		name: 'Products',
+		name: 'products',
 		component: () => import('@/views/Products.vue'),
 		meta: { title: 'Productos', layout: true, requiresAuth: false, isAdmin: false },
 	},
@@ -26,6 +28,24 @@ const routes = [
 
 const router = new VueRouter({
 	routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+	if (to.matched.some(record => record.meta.requiresAuth)) {
+		if (user) {
+			console.log('if auth');
+			next();
+		} else {
+			console.log('else auth');
+			next({
+				path: '/auth',
+				params: { nextUrl: to.fullPath },
+			});
+		}
+	} else {
+		console.log('no auth');
+		next();
+	}
 });
 
 export default router;

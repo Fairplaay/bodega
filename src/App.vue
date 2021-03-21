@@ -1,7 +1,8 @@
 <template>
 	<v-app>
 		<v-app-bar v-if="$route.meta.layout" app color="primary" dark>
-			{{ $route.meta.title }}
+			<v-btn v-if="user" text to="/prices" class="ma-2">Precios</v-btn>
+			<v-btn text to="/" class="ma-2">Productos</v-btn>
 			<v-spacer></v-spacer>
 			<v-btn text @click="logout">Salir</v-btn>
 		</v-app-bar>
@@ -15,14 +16,14 @@
 import { auth } from '@/Firebase';
 
 export default {
-	mounted() {
-		auth.onAuthStateChanged(user => {
-			if (user) console.log('ya ha ingresado');
-			else console.log('ya ha salio');
-		});
+	data() {
+		return {
+			user: JSON.parse(localStorage.getItem('user')),
+		};
 	},
 	methods: {
 		async logout() {
+			localStorage.removeItem('user');
 			await auth.signOut();
 			this.$router.push({ name: 'auth' });
 		},
