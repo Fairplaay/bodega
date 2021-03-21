@@ -55,7 +55,9 @@
 								<span v-else class="text-capitalize"> 0 </span>
 							</template>
 							<template v-slot:[`item.actions`]="{ item }">
-								<v-btn icon><v-icon>mdi-pencil</v-icon></v-btn>
+								<v-btn icon @click="openDialogEdit(item)">
+									<v-icon>mdi-pencil</v-icon>
+								</v-btn>
 								<v-btn icon @click="deleteItem(item)">
 									<v-icon>mdi-close</v-icon>
 								</v-btn>
@@ -65,7 +67,7 @@
 				</v-row>
 			</v-container>
 		</v-main>
-		<v-dialog v-model="dialog" width="500">
+		<v-dialog v-model="dialog" width="500" @click:outside="closeDialog">
 			<v-card>
 				<v-card-title class="headline primary white--text">Nuevo producto</v-card-title>
 				<v-card-text class="mt-4 pb-0">
@@ -124,9 +126,9 @@
 				<v-divider></v-divider>
 
 				<v-card-actions>
-					<v-btn color="error" text @click="dialog = false">Cerrar</v-btn>
+					<v-btn color="error" text @click="closeDialog">Cerrar</v-btn>
 					<v-spacer></v-spacer>
-					<v-btn color="success" text @click="save">Guardar</v-btn>
+					<v-btn color="success" text @click="onSubmit">Guardar</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
@@ -231,10 +233,14 @@ export default {
 
 			return sum;
 		},
-		async save() {
+		async onSubmit() {
 			if (!this.$v.$invalid) {
 				this.loading = true;
-				await db.collection('products').add(this.form);
+				if (this.form.id) {
+					await this.editItem();
+				} else {
+					await this.onSubmitItem();
+				}
 				this.clearInputs();
 				this.dialog = false;
 				this.loading = false;
@@ -247,13 +253,28 @@ export default {
 				this.loading = false;
 			}
 		},
+		async editItem() {
+			await db.collection('products').doc(this.form.id).set(this.form);
+		},
+		async onSubmitItem() {
+			await db.collection('products').add(this.form);
+		},
 		clearInputs() {
 			this.form = {
 				name: '',
 				price: null,
 				cant: null,
 				measure: null,
+				percent: 50,
 			};
+		},
+		openDialogEdit(item) {
+			this.dialog = true;
+			this.form = item;
+		},
+		closeDialog() {
+			this.clearInputs();
+			this.dialog = false;
 		},
 	},
 	validations: {
