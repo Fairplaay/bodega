@@ -65,8 +65,7 @@
 								</v-list-item-avatar>
 							</div>
 							<div class="text-center white--text py-4">
-								Lorem ipsum dolor sit amet consectetur, fuga incidunt distinctio
-								laudantium impedit voluptate.
+								Aqui algunas imagenes de nuestros productos
 							</div>
 						</v-window-item>
 					</v-window>
@@ -85,6 +84,7 @@
 
 <script>
 import background from '@/assets/login.png';
+
 export default {
 	components: {
 		SignIn: () => import('@/components/auth/SignIn'),

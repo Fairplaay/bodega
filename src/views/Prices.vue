@@ -147,6 +147,12 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
+		<v-snackbar v-model="snackbar.show" :color="snackbar.color" top right>
+			{{ snackbar.text }}
+			<template v-slot:action="{ attrs }">
+				<v-btn text v-bind="attrs" @click="snackbar.show = false"> Cerrar </v-btn>
+			</template>
+		</v-snackbar>
 	</v-container>
 </template>
 
@@ -162,6 +168,11 @@ export default {
 		products: db.collection('products'),
 	},
 	data: () => ({
+		snackbar: {
+			show: false,
+			color: '',
+			text: '',
+		},
 		search: '',
 		dolar: 0,
 		dialog: false,
@@ -269,16 +280,43 @@ export default {
 		},
 		async deleteItem(item) {
 			if (confirm(`Eliminar ${item.name}`)) {
-				this.loading = true;
-				await db.collection('products').doc(item.id).delete();
-				this.loading = false;
+				try {
+					this.loading = true;
+					await db.collection('products').doc(item.id).delete();
+					this.snackbar = {
+						text: `Eliminado ${item.name}`,
+						color: 'success',
+						show: true,
+					};
+					this.loading = false;
+				} catch (error) {
+					this.snackbar = { text: error.message, color: 'error', show: true };
+				}
 			}
 		},
 		async editItem() {
-			await db.collection('products').doc(this.form.id).set(this.form);
+			try {
+				await db.collection('products').doc(this.form.id).set(this.form);
+				this.snackbar = {
+					text: `Editado ${this.form.name}`,
+					color: 'success',
+					show: true,
+				};
+			} catch (error) {
+				this.snackbar = { text: error.message, color: 'error', show: true };
+			}
 		},
 		async onSubmitItem() {
-			await db.collection('products').add(this.form);
+			try {
+				await db.collection('products').add(this.form);
+				this.snackbar = {
+					text: `Agregado ${this.form.name}`,
+					color: 'success',
+					show: true,
+				};
+			} catch (error) {
+				this.snackbar = { text: error.message, color: 'error', show: true };
+			}
 		},
 		clearInputs() {
 			this.form = {
