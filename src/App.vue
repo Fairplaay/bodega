@@ -267,6 +267,7 @@ export default {
 				measure: null,
 				percent: 50,
 			};
+			this.$v.$reset();
 		},
 		openDialogEdit(item) {
 			this.dialog = true;
