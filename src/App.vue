@@ -71,7 +71,7 @@
 							</template>
 							<template v-slot:[`item.total_dolar`]="{ item }">
 								<span v-if="dolar" class="text-capitalize">
-									{{ setPrice(item, 'bs') / dolar }}
+									{{ (setPrice(item, 'bs') / dolar).toFixed(4) }}
 								</span>
 								<span v-else class="text-capitalize"> 0 </span>
 							</template>
