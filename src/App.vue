@@ -31,12 +31,27 @@
 						<span class="success--text title">{{ dolar }} BSF</span>
 					</v-col>
 				</v-row>
+				<v-row no-gutters justify="end">
+					<v-col cols="12" sm="6" md="3">
+						<v-text-field
+							v-model="search"
+							dense
+							style="width: 300px"
+							outlined
+							placeholder="Buscar"
+							hide-details
+							type="text"
+						>
+						</v-text-field>
+					</v-col>
+				</v-row>
 				<v-row>
 					<v-col cols="12">
 						<v-data-table
 							:loading="loading"
 							:headers="headers"
 							:items="items"
+							:search="search"
 							:items-per-page="5"
 							class="elevation-1"
 							loading-text="Cargando..."
@@ -147,6 +162,7 @@ export default {
 		products: db.collection('products'),
 	},
 	data: () => ({
+		search: '',
 		dolar: 0,
 		dialog: false,
 		loading: false,
@@ -159,18 +175,18 @@ export default {
 		},
 		headers: [
 			{
-				text: 'Nombre del product',
+				text: 'Nombre del producto',
 				align: 'start',
 				sortable: false,
 				value: 'name',
 			},
-			{ text: 'Precio', value: 'price' },
-			{ text: 'Cantidad', value: 'cant' },
-			{ text: 'Unidad de medida', value: 'measure' },
-			{ text: '%', value: 'percent' },
-			{ text: 'Precio $', value: 'total_dolar' },
-			{ text: 'Precio Bs', value: 'total_bolivar' },
-			{ text: 'Acciones', value: 'actions' },
+			{ text: 'Precio', value: 'price', sortable: false },
+			{ text: 'Cantidad', value: 'cant', sortable: false },
+			{ text: 'Unidad de medida', value: 'measure', sortable: false },
+			{ text: '%', value: 'percent', sortable: false },
+			{ text: 'Precio $', value: 'total_dolar', sortable: false },
+			{ text: 'Precio Bs', value: 'total_bolivar', sortable: false },
+			{ text: 'Acciones', value: 'actions', sortable: false },
 		],
 		items: [],
 	}),
@@ -211,12 +227,14 @@ export default {
 
 	mounted() {
 		this.dolar = localStorage.getItem('DOLAR');
-		db.collection('products').onSnapshot(querySnapshot => {
-			this.items = [];
-			querySnapshot.forEach(doc => {
-				this.items.push({ ...doc.data(), id: doc.id });
+		db.collection('products')
+			.orderBy('name')
+			.onSnapshot(querySnapshot => {
+				this.items = [];
+				querySnapshot.forEach(doc => {
+					this.items.push({ ...doc.data(), id: doc.id });
+				});
 			});
-		});
 	},
 	methods: {
 		setDolar(price) {
