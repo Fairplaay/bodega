@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar app color="primary" dark> Control de precios prueba</v-app-bar>
+		<v-app-bar app color="primary" dark> Control de precios</v-app-bar>
 		<v-main>
 			<v-container>
 				<v-row justity="space-between" align="center">
@@ -233,16 +233,19 @@ export default {
 
 	mounted() {
 		this.dolar = localStorage.getItem('DOLAR');
-		db.collection('products')
-			.orderBy('name')
-			.onSnapshot(querySnapshot => {
-				this.items = [];
-				querySnapshot.forEach(doc => {
-					this.items.push({ ...doc.data(), id: doc.id });
-				});
-			});
+		this.initApp();
 	},
 	methods: {
+		initApp() {
+			db.collection('products')
+				.orderBy('name')
+				.onSnapshot(querySnapshot => {
+					this.items = [];
+					querySnapshot.forEach(doc => {
+						this.items.push({ ...doc.data(), id: doc.id });
+					});
+				});
+		},
 		setDolar(price) {
 			localStorage.setItem('DOLAR', price);
 			this.dolar = price;
@@ -265,8 +268,7 @@ export default {
 				} else {
 					await this.onSubmitItem();
 				}
-				this.clearInputs();
-				this.dialog = false;
+				this.closeDialog();
 				this.loading = false;
 			}
 		},
