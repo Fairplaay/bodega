@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar app color="primary" dark> Control de precios</v-app-bar>
+		<v-app-bar app color="primary" dark> Control de precios prueba</v-app-bar>
 		<v-main>
 			<v-container>
 				<v-row justity="space-between" align="center">
