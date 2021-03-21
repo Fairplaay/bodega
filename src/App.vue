@@ -52,20 +52,26 @@
 							:headers="headers"
 							:items="items"
 							:search="search"
-							:items-per-page="5"
+							:items-per-page="10"
 							class="elevation-1"
 							loading-text="Cargando..."
 							no-data-text="No hay productos"
 						>
+							<template v-slot:[`item.und_dolar`]="{ item }">
+								<span class="text-capitalize"> {{ undPrice(item) }} </span>
+							</template>
 							<template v-slot:[`item.percent`]="{ item }">
 								<span class="text-capitalize"> {{ item.percent }} </span>
-							</template>
-							<template v-slot:[`item.total_dolar`]="{ item }">
-								<span class="text-capitalize"> {{ item.price / item.cant }} </span>
 							</template>
 							<template v-slot:[`item.total_bolivar`]="{ item }">
 								<span v-if="dolar" class="text-capitalize">
 									{{ setPrice(item, 'bs') }}
+								</span>
+								<span v-else class="text-capitalize"> 0 </span>
+							</template>
+							<template v-slot:[`item.total_dolar`]="{ item }">
+								<span v-if="dolar" class="text-capitalize">
+									{{ setPrice(item, 'bs') / dolar }}
 								</span>
 								<span v-else class="text-capitalize"> 0 </span>
 							</template>
@@ -100,8 +106,7 @@
 						type="number"
 						dense
 						outlined
-						label="Precio"
-						placeholder="Al mayor en dolar"
+						label="Precio al mayor en $"
 						:error-messages="priceErrors"
 						@input="$v.form.price.$touch()"
 						@blur="$v.form.price.$touch()"
@@ -175,17 +180,18 @@ export default {
 		},
 		headers: [
 			{
-				text: 'Nombre del producto',
+				text: 'Nombre',
 				align: 'start',
 				sortable: false,
 				value: 'name',
 			},
-			{ text: 'Precio', value: 'price', sortable: false },
 			{ text: 'Cantidad', value: 'cant', sortable: false },
-			{ text: 'Unidad de medida', value: 'measure', sortable: false },
-			{ text: '%', value: 'percent', sortable: false },
-			{ text: 'Precio $', value: 'total_dolar', sortable: false },
-			{ text: 'Precio Bs', value: 'total_bolivar', sortable: false },
+			{ text: 'Medida', value: 'measure', sortable: false },
+			{ text: 'Precio al Mayor $', value: 'price', sortable: false },
+			{ text: 'Precio x unidad $', value: 'und_dolar', sortable: false },
+			{ text: '% Ganancia', value: 'percent', sortable: false },
+			{ text: 'Precio venta $', value: 'total_dolar', sortable: false },
+			{ text: 'Precio venta Bs', value: 'total_bolivar', sortable: false },
 			{ text: 'Acciones', value: 'actions', sortable: false },
 		],
 		items: [],
@@ -249,7 +255,7 @@ export default {
 			// suma %
 			const sum = (item.percent / 100) * valueBs + valueBs;
 
-			return sum;
+			return sum.toFixed(0);
 		},
 		async onSubmit() {
 			if (!this.$v.$invalid) {
@@ -294,6 +300,9 @@ export default {
 		closeDialog() {
 			this.clearInputs();
 			this.dialog = false;
+		},
+		undPrice(item) {
+			return (item.price / item.cant).toFixed(4);
 		},
 	},
 	validations: {
