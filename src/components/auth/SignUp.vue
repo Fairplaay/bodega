@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { auth } from '@/Firebase';
+import { mapActions } from 'vuex';
 
 export default {
 	data() {
@@ -59,24 +59,13 @@ export default {
 	methods: {
 		async onSubmit() {
 			try {
-				const { user } = await auth.createUserWithEmailAndPassword(
-					this.form.email,
-					this.form.password
-				);
-				localStorage.setItem(
-					'user',
-					JSON.stringify({
-						name: user.displayName,
-						email: user.email,
-						photoUrl: user.photoURL,
-						emailVerified: user.emailVerified,
-						uid: user.uid,
-					})
-				);
+				const user = await this.createUser(this.form);
+				if (user) this.$router.push({ name: 'products' });
 			} catch (error) {
 				this.snackbar = { text: error.message, color: 'error', show: true };
 			}
 		},
+		...mapActions({ createUser: 'createUser' }),
 	},
 };
 </script>

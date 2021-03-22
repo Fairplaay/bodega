@@ -14,12 +14,15 @@
 
 <script>
 import { auth } from '@/Firebase';
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
-	data() {
-		return {
-			user: JSON.parse(localStorage.getItem('user')),
-		};
+	computed: {
+		...mapGetters({ user: 'user' }),
+	},
+	mounted() {
+		const user = JSON.parse(localStorage.getItem('user'));
+		this.setUser(user);
 	},
 	methods: {
 		async logout() {
@@ -27,6 +30,7 @@ export default {
 			await auth.signOut();
 			this.$router.push({ name: 'auth' });
 		},
+		...mapMutations({ setUser: 'setUser' }),
 	},
 };
 </script>

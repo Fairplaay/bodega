@@ -35,8 +35,9 @@
 	</div>
 </template>
 <script>
-import { auth } from '@/Firebase';
 import GoogleBtn from '@/components/GoogleBtn';
+import { mapActions } from 'vuex';
+
 export default {
 	components: {
 		GoogleBtn,
@@ -57,25 +58,13 @@ export default {
 	methods: {
 		async onSubmit() {
 			try {
-				const { user } = await auth.signInWithEmailAndPassword(
-					this.form.email,
-					this.form.password
-				);
-				localStorage.setItem(
-					'user',
-					JSON.stringify({
-						name: user.displayName,
-						email: user.email,
-						photoUrl: user.photoURL,
-						emailVerified: user.emailVerified,
-						uid: user.uid,
-					})
-				);
-				this.$router.push({ name: 'Products' });
+				const user = await this.signIn(this.form);
+				if (user) this.$router.push({ name: 'products' });
 			} catch (error) {
 				this.snackbar = { text: error.message, color: 'error', show: true };
 			}
 		},
+		...mapActions({ signIn: 'signIn' }),
 	},
 };
 </script>
