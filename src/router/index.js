@@ -31,20 +31,13 @@ const router = new VueRouter({
 router.beforeEach(async (to, from, next) => {
 	const user = JSON.parse(localStorage.getItem('user'));
 	if (to.matched.some(record => record.meta.requiresAuth)) {
-		if (user) {
-			console.log('if auth');
-			next();
-		} else {
-			console.log('else auth');
+		if (user) next();
+		else
 			next({
 				path: '/auth',
 				params: { nextUrl: to.fullPath },
 			});
-		}
-	} else {
-		console.log('no auth');
-		next();
-	}
+	} else next();
 });
 
 export default router;
