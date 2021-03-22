@@ -3,8 +3,6 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
-const user = JSON.parse(localStorage.getItem('user'));
-
 const routes = [
 	{
 		path: '/auth',
@@ -31,6 +29,7 @@ const router = new VueRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+	const user = JSON.parse(localStorage.getItem('user'));
 	if (to.matched.some(record => record.meta.requiresAuth)) {
 		if (user) {
 			console.log('if auth');
