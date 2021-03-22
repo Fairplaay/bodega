@@ -4,6 +4,7 @@ import vuetify from './plugins/vuetify';
 import './registerServiceWorker';
 import { firestorePlugin } from 'vuefire';
 import router from './router';
+import store from './store';
 Vue.config.productionTip = false;
 
 Vue.use(firestorePlugin);
@@ -11,5 +12,6 @@ Vue.use(firestorePlugin);
 new Vue({
 	vuetify,
 	router,
+	store,
 	render: h => h(App),
 }).$mount('#app');
